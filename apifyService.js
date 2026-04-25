@@ -14,7 +14,7 @@ async function fetchGoogleMapsLeads(queries) {
             // Prepare Actor input
             const input = {
                 searchStringsArray: [query],
-                maxCrawledPlacesPerSearch: 20, // Small limit for testing, can be adjusted
+                maxCrawledPlacesPerSearch: 100, // Increased limit to find more leads without websites
                 language: "en",
                 region: "PK"
             };
@@ -31,7 +31,7 @@ async function fetchGoogleMapsLeads(queries) {
             items.forEach(item => {
                 allLeads.push({
                     name: item.title || "",
-                    city: query.includes("Islamabad") ? "Islamabad" : "Lahore", // Basic city detection from query
+                    city: query.split(" in ")[1] || "Pakistan", // Extract city dynamically
                     phone: item.phone || item.phoneUnformatted || "",
                     website: item.website || "",
                     mapUrl: item.url || "",

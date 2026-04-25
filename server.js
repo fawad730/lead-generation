@@ -25,11 +25,6 @@ app.get('/api/leads', async (req, res) => {
     }
 
     const normalizedCity = city.trim();
-    const validCities = ['islamabad', 'lahore'];
-
-    if (!validCities.includes(normalizedCity.toLowerCase())) {
-        return res.status(400).json({ error: `Invalid city. Supported: ${validCities.join(', ')}` });
-    }
 
     console.log(`\n[API] Received request for city: ${normalizedCity}`);
 
