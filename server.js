@@ -50,6 +50,10 @@ app.get('/api/leads', async (req, res) => {
         let leads = Array.from(uniqueMap.values());
         console.log(`[API] ${leads.length} unique leads after dedup.`);
 
+        // Filter to keep ONLY leads without a website
+        leads = leads.filter(lead => !lead.website);
+        console.log(`[API] ${leads.length} leads after keeping ONLY those WITHOUT a website.`);
+
         // 3. Analyze websites & assign priority
         for (let i = 0; i < leads.length; i++) {
             const lead = leads[i];
