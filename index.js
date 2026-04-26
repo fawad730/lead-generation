@@ -28,9 +28,7 @@ async function main() {
     let leads = Array.from(uniqueLeadsMap.values());
     console.log(`Total unique leads after removing duplicates: ${leads.length}`);
 
-    // Filter to keep ONLY leads without a website
-    leads = leads.filter(lead => !lead.website);
-    console.log(`Total leads after keeping ONLY those WITHOUT a website: ${leads.length}`);
+
 
     // 2. Analyze Websites and Determine Priority
     console.log("\n--- Step 2: Analyzing Websites & Filtering ---");

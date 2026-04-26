@@ -26,7 +26,7 @@ async function analyzeWebsite(url) {
 
         // Check for basic structure and viewport meta tag
         const hasViewport = $('meta[name="viewport"]').length > 0;
-        
+
         // Determine if request is https by looking at response URL or config
         const isHttps = response.request?.res?.client?._httpMessage?.agent?.protocol === 'https:' || targetUrl.startsWith('https');
 
@@ -67,7 +67,7 @@ function determinePriority(lead, siteAnalysis) {
         if (lowRating) reasons.push('Low rating (< 4.2)');
         if (fewReviews) reasons.push('Few reviews (< 50)');
         if (isOutdated) reasons.push('Outdated website (No HTTPS or missing viewport)');
-        
+
         return {
             priority: 'MEDIUM',
             notes: `Needs improvement: ${reasons.join(', ')}`

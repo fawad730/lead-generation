@@ -18,15 +18,6 @@ exports.handler = async (event, context) => {
     }
 
     const normalizedCity = city.trim();
-    const validCities = ['islamabad', 'lahore'];
-
-    if (!validCities.includes(normalizedCity.toLowerCase())) {
-        return { 
-            statusCode: 400, 
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ error: `Invalid city. Supported: ${validCities.join(', ')}` }) 
-        };
-    }
 
     try {
         console.log(`[Netlify Function] Received request for city: ${normalizedCity}`);
