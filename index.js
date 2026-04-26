@@ -1,5 +1,5 @@
 const { fetchGoogleMapsLeads } = require('./apifyService');
-const { analyzeWebsite, determinePriority } = require('./analyzer');
+const { determinePriority } = require('./analyzer');
 const { saveToJson, saveToCsv } = require('./save');
 
 async function main() {
@@ -28,20 +28,17 @@ async function main() {
     let leads = Array.from(uniqueLeadsMap.values());
     console.log(`Total unique leads after removing duplicates: ${leads.length}`);
 
+    // Keep ONLY leads WITHOUT a website
+    leads = leads.filter(lead => !lead.website);
+    console.log(`Total leads without a website: ${leads.length}`);
 
-
-    // 2. Analyze Websites and Determine Priority
-    console.log("\n--- Step 2: Analyzing Websites & Filtering ---");
+    // 2. Assign Priority
+    console.log("\n--- Step 2: Scoring & Prioritizing ---");
     for (let i = 0; i < leads.length; i++) {
         const lead = leads[i];
-        console.log(`Analyzing [${i+1}/${leads.length}]: ${lead.name}`);
-        
-        let siteAnalysis = { hasWebsite: false };
-        if (lead.website) {
-            siteAnalysis = await analyzeWebsite(lead.website);
-        }
+        console.log(`Scoring [${i+1}/${leads.length}]: ${lead.name}`);
 
-        const priorityData = determinePriority(lead, siteAnalysis);
+        const priorityData = determinePriority(lead);
         lead.priority = priorityData.priority;
         lead.notes = priorityData.notes;
     }

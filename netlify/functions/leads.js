@@ -1,5 +1,5 @@
 const { fetchGoogleMapsLeads } = require('../../apifyService');
-const { analyzeWebsite, determinePriority } = require('../../analyzer');
+const { determinePriority } = require('../../analyzer');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -36,20 +36,19 @@ exports.handler = async (event, context) => {
         });
         let leads = Array.from(uniqueMap.values());
 
-        // 3. Analyze websites & assign priority
+        // 3. Keep ONLY leads WITHOUT a website
+        leads = leads.filter(lead => !lead.website);
+
+        // 4. Assign priority based on rating/reviews
         for (let i = 0; i < leads.length; i++) {
             const lead = leads[i];
-            let siteAnalysis = { hasWebsite: false };
-            if (lead.website) {
-                siteAnalysis = await analyzeWebsite(lead.website);
-            }
 
-            const { priority, notes } = determinePriority(lead, siteAnalysis);
+            const { priority, notes } = determinePriority(lead);
             lead.priority = priority;
             lead.notes = notes;
         }
 
-        // 4. Sort by priority
+        // 5. Sort by priority
         const order = { HIGH: 1, MEDIUM: 2, LOW: 3 };
         leads.sort((a, b) => order[a.priority] - order[b.priority]);
 

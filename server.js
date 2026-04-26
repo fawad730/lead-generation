@@ -4,7 +4,7 @@ const path = require('path');
 require('dotenv').config();
 
 const { fetchGoogleMapsLeads } = require('./apifyService');
-const { analyzeWebsite, determinePriority } = require('./analyzer');
+const { determinePriority } = require('./analyzer');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -45,28 +45,25 @@ app.get('/api/leads', async (req, res) => {
         let leads = Array.from(uniqueMap.values());
         console.log(`[API] ${leads.length} unique leads after dedup.`);
 
+        // 3. Keep ONLY leads WITHOUT a website (potential clients for web services)
+        leads = leads.filter(lead => !lead.website);
+        console.log(`[API] ${leads.length} leads without a website.`);
 
-
-        // 3. Analyze websites & assign priority
+        // 4. Assign priority based on rating/reviews (all have no website)
         for (let i = 0; i < leads.length; i++) {
             const lead = leads[i];
-            console.log(`[API] Analyzing [${i + 1}/${leads.length}]: ${lead.name}`);
+            console.log(`[API] Scoring [${i + 1}/${leads.length}]: ${lead.name}`);
 
-            let siteAnalysis = { hasWebsite: false };
-            if (lead.website) {
-                siteAnalysis = await analyzeWebsite(lead.website);
-            }
-
-            const { priority, notes } = determinePriority(lead, siteAnalysis);
+            const { priority, notes } = determinePriority(lead);
             lead.priority = priority;
             lead.notes = notes;
         }
 
-        // 4. Sort by priority (HIGH → MEDIUM → LOW)
+        // 5. Sort by priority (HIGH → MEDIUM → LOW)
         const order = { HIGH: 1, MEDIUM: 2, LOW: 3 };
         leads.sort((a, b) => order[a.priority] - order[b.priority]);
 
-        console.log(`[API] Returning ${leads.length} analyzed leads.`);
+        console.log(`[API] Returning ${leads.length} leads (no website only).`);
         return res.json({ leads, total: leads.length });
 
     } catch (err) {

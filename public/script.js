@@ -62,13 +62,6 @@ function priorityBadge(priority) {
     return `<span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold ${p.bg} ${p.text} ${p.glow}">${p.label}</span>`;
 }
 
-/** Truncate a URL for display */
-function truncateUrl(url, max = 28) {
-    if (!url) return '—';
-    let clean = url.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
-    return clean.length > max ? clean.substring(0, max) + '…' : clean;
-}
-
 // ── Rendering ──────────────────────────────────────────────
 
 function updateStats() {
@@ -113,21 +106,13 @@ function renderTable() {
                     : '<span class="text-surface-200/25 text-sm">—</span>'
                 }
             </td>
-            <!-- Website -->
+            <!-- Google Maps Link -->
             <td class="px-5 py-3.5">
-                ${lead.website
-                    ? `<a href="${escapeHtml(lead.website)}" target="_blank" rel="noopener" class="inline-flex items-center gap-1 text-brand-400 hover:text-brand-300 text-sm transition">
-                        ${truncateUrl(lead.website)}
-                        <svg class="w-3 h-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
-                       </a>`
-                    : '<span class="text-surface-200/25 text-sm">No website</span>'
-                }
-            </td>
-            <!-- Map -->
-            <td class="px-5 py-3.5 text-center">
                 ${lead.mapUrl
-                    ? `<a href="${escapeHtml(lead.mapUrl)}" target="_blank" rel="noopener" class="inline-flex items-center justify-center p-2 rounded-lg bg-surface-100/5 hover:bg-surface-100/10 text-brand-400 hover:text-brand-300 transition tooltip" data-tip="Open in Google Maps">
-                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 12.414a6 6 0 10-1.414 1.414l4.243 4.243a1 1 0 001.414-1.414z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                    ? `<a href="${escapeHtml(lead.mapUrl)}" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-brand-500/10 hover:bg-brand-500/20 text-brand-400 hover:text-brand-300 text-xs font-medium transition-all duration-200 group">
+                        <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                        View on Maps
+                        <svg class="w-3 h-3 opacity-50 group-hover:translate-x-0.5 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
                        </a>`
                     : '<span class="text-surface-200/25 text-sm">—</span>'
                 }
@@ -136,6 +121,7 @@ function renderTable() {
             <td class="px-5 py-3.5 text-center">
                 <p class="text-sm font-semibold text-white">${lead.rating || '—'}</p>
                 <p class="text-[10px] text-amber-400/60 tracking-wide">${lead.rating ? starRating(lead.rating) : ''}</p>
+                <p class="text-[10px] text-surface-200/30 mt-0.5">${lead.reviews ? lead.reviews + ' reviews' : ''}</p>
             </td>
             <!-- Priority -->
             <td class="px-5 py-3.5 text-center">${priorityBadge(lead.priority)}</td>
@@ -179,7 +165,7 @@ async function fetchLeads(city) {
         updateStats();
         renderTable();
 
-        showToast(`✅ Found ${allLeads.length} leads`);
+        showToast(`✅ Found ${allLeads.length} leads without websites`);
 
     } catch (err) {
         loadingSection.classList.add('hidden');
@@ -195,9 +181,9 @@ async function fetchLeads(city) {
 function exportCsv() {
     if (allLeads.length === 0) return showToast('⚠ No leads to export');
 
-    const headers = ['Name', 'City', 'Phone', 'Website', 'Map URL', 'Rating', 'Reviews', 'Priority', 'Notes'];
+    const headers = ['Name', 'City', 'Phone', 'Google Maps URL', 'Rating', 'Reviews', 'Priority', 'Notes'];
     const rows = allLeads.map(l => [
-        l.name, l.city, l.phone, l.website, l.mapUrl, l.rating, l.reviews, l.priority, l.notes
+        l.name, l.city, l.phone, l.mapUrl, l.rating, l.reviews, l.priority, l.notes
     ].map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','));
 
     const csv = [headers.join(','), ...rows].join('\n');
@@ -206,7 +192,7 @@ function exportCsv() {
 
     const a = document.createElement('a');
     a.href = url;
-    a.download = `leads_${new Date().toISOString().slice(0,10)}.csv`;
+    a.download = `leads_no_website_${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
 
